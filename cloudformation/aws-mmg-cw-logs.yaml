@@ -1,0 +1,130 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  LambdaS3Bucket:
+    Type: String
+    Default: ''
+  CFNCustomProviderZipFileName:
+    Type: String
+    Default: lambdas/aws-mmg-cw-logs-0.0.1.zip
+  LogRetentionInDays:
+    Description: 'The default retention period for log groups that do not have one will be set to 30 days'
+    Type: Number
+    Default: 30
+    MinValue: 1
+
+Conditions:
+  UsePublicBucket: !Equals
+    - !Ref 'LambdaS3Bucket'
+    - ''
+
+Resources:
+  CloudWatchLambdaPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:DescribeLogGroups
+              - logs:DescribeLogStreams
+              - logs:PutRetentionPolicy
+              - logs:DeleteLogStream
+              - logs:GetLogStream
+              - logs:GetLogEvents
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource:
+              - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:aws-mmg-cw-delete-empty-log-streams'
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Ref CloudWatchLambdaPolicy
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+
+  DeleteEmptyLogStreams:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Delete empty log streams older than retention period
+      FunctionName: aws-mmg-cw-delete-empty-log-streams
+      Code:
+        S3Bucket: !If
+          - UsePublicBucket
+          - !Sub 'aws-mmg-cw-logs-${AWS::Region}'
+          - !Ref 'LambdaS3Bucket'
+        S3Key: !Ref 'CFNCustomProviderZipFileName'
+      Handler: aws_mmg_cw_logs.delete_empty_log_streams.handle
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: python3.7
+      Timeout: 900
+
+  DeleteEmptyLogStreamsSchedulePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !GetAtt DeleteEmptyLogStreams.Arn
+      Principal: events.amazonaws.com
+
+  DeleteEmptyLogStreamsSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: aws-cloudwatch-delete-empty-log-streams
+      Description: delete empty log streams
+      ScheduleExpression: 'cron(10 * * * ? *)'
+      State: ENABLED
+      Targets:
+        - Id: aws-mmg-cw-logs-delete-empty-log-streams
+          Arn: !GetAtt DeleteEmptyLogStreams.Arn
+          Input: '{"dry_run": false}'
+
+  SetLogRetentionPeriod:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: set default log retention period to groups without one
+      FunctionName: aws-mmg-cw-set-log-retention-period
+      Code:
+        S3Bucket: !If
+          - UsePublicBucket
+          - !Sub 'aws-mmg-cw-logs-${AWS::Region}'
+          - !Ref 'LambdaS3Bucket'
+        S3Key: !Ref 'CFNCustomProviderZipFileName'
+      Handler: aws_mmg_cw_logs.set_log_retention.handle
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: python3.7
+      Timeout: 900
+      Environment:
+        Variables:
+          DEFAULT_RETENTION_IN_DAYS: !Ref 'LogRetentionInDays'
+
+  SetLogRetentionPeriodSchedulePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !GetAtt SetLogRetentionPeriod.Arn
+      Principal: events.amazonaws.com
+
+  SetLogRetentionPeriodSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: aws-cloudwatch-set-log-retention
+      Description: set log retention on log streams
+      ScheduleExpression: 'cron(0 * * * ? *)'
+      State: ENABLED
+      Targets:
+        - Id: aws-mmg-cw-logs-set-log-retention-period
+          Arn: !GetAtt SetLogRetentionPeriod.Arn
+          Input: '{"dry_run": false}'

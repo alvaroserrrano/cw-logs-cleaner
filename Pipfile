@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+boto3 = "*"
+botostubs = "*"
+click = "*"
+twine = "*"
+
+[requires]
+python_version = "3.7"
+
+[packages]
+click = "*"
+boto3 = "*"
+aws-mmg-cw-logs = {editable = true,path = "."}
