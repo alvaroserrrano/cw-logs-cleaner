@@ -15,4 +15,4 @@ python_version = "3.7"
 [packages]
 click = "*"
 boto3 = "*"
-aws-mmg-cw-logs = {editable = true,path = "."}
+aws-cw-logs = {editable = true,path = "."}

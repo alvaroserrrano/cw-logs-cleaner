@@ -1,8 +1,8 @@
 SHELL=/bin/bash
 PYTHON=python3
 
-IMAGE=aws-mmg-cw-logs
-NAME=aws-mmg-cw-logs
+IMAGE=aws-cw-logs
+NAME=aws-cw-logs
 VERSION=$(shell . $(RELEASE_SUPPORT) ; getVersion)
 TAG=$(shell . $(RELEASE_SUPPORT); getTag)
 RELEASE_SUPPORT := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))/.make-release-support
@@ -10,7 +10,7 @@ DOCKER_HUB=docker.io
 
 DEFAULT_REGION=eu-central-1
 
-S3_BUCKET_PREFIX=aws-mmg-cw-logs
+S3_BUCKET_PREFIX=aws-cw-logs
 S3_BUCKET=$(S3_BUCKET_PREFIX)-$(DEFAULT_REGION)
 
 ACCOUNT_NUMBER=$(shell aws sts get-caller-identity --query Account --output text)

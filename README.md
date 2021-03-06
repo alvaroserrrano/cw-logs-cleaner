@@ -9,7 +9,7 @@ Setuptools implementation for better integration with Click library
 
 ```
 make
-pip install git+https://github.com/medlabmg/aws-mmg-cw-logs.git
+pip install git+https://github.com/medlabmg/aws-cw-logs.git
 ```
 
 ## global params
@@ -26,7 +26,7 @@ Allowed params:
 
 ### Example
 
-`aws-mmg-cw-logs set-log-retention --days 30`
+`aws-cw-logs set-log-retention --days 30`
 
 ## delete empty log streams
 
@@ -37,17 +37,17 @@ Allowed params:
 
 ### Example
 
-`aws-mmg-cw-logs delete-empty-log-streams`
+`aws-cw-logs delete-empty-log-streams`
 
 ## aws cloud deployment
 
 ```sh
-git clone https://github.com/alvaroserrrano/aws-mmg-cw-logs.git
-cd aws-mmg-cw-logs
+git clone https://github.com/alvaroserrrano/aws-cw-logs.git
+cd aws-cw-logs
 aws cloudformation deploy \
 	--capabilities CAPABILITY_IAM \
-	--stack-name aws-mmg-cw-logs \
-	--template-file ./cloudformation/aws-mmg-cw-logs.yaml \
+	--stack-name aws-cw-logs \
+	--template-file ./cloudformation/aws-cw-logs.yaml \
 	--parameter-overrides LogRetentionInDays=30
 ```
 

@@ -9,7 +9,7 @@ __pycache__/
 *$py.class
 .vscode/
 .idea
-aws_mmg_cw_logs.egg-info/
+aws_cw_logs.egg-info/
 
 # Distribution / packaging
 .Python

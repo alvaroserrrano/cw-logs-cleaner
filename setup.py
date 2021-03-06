@@ -1,5 +1,5 @@
 """
-AWS MMG Cloudwatch utils
+AWS Cloudwatch utility to clean up logs
 """
 
 from os import path
@@ -12,7 +12,7 @@ with open(path.join(current_dir, 'README.md'), encoding='utf-8') as f:
   long_description = f.read()
 
 setup(
-    name='aws-mmg-cw-logs',
+    name='aws-cw-logs',
     version="0.0.1",
     url='',
     license='MIT',
@@ -32,7 +32,7 @@ setup(
     test_suite='tests',
     entry_points={
         'console_scripts': [
-            'aws-mmg-cw-logs = aws_mmg_cw_logs.__main__:main'
+            'aws-cw-logs = aws_cw_logs.__main__:main'
         ],
     },
     classifiers=[

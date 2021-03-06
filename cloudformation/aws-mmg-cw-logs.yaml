@@ -7,7 +7,7 @@ Parameters:
     Default: ''
   CFNCustomProviderZipFileName:
     Type: String
-    Default: lambdas/aws-mmg-cw-logs-0.0.1.zip
+    Default: lambdas/aws-cw-logs-0.0.1.zip
   LogRetentionInDays:
     Description: 'The default retention period for log groups that do not have one will be set to 30 days'
     Type: Number
@@ -39,7 +39,7 @@ Resources:
             Action:
               - lambda:InvokeFunction
             Resource:
-              - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:aws-mmg-cw-delete-empty-log-streams'
+              - !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:aws-cw-delete-empty-log-streams'
 
   LambdaRole:
     Type: AWS::IAM::Role
@@ -60,14 +60,14 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Description: Delete empty log streams older than retention period
-      FunctionName: aws-mmg-cw-delete-empty-log-streams
+      FunctionName: aws-cw-delete-empty-log-streams
       Code:
         S3Bucket: !If
           - UsePublicBucket
-          - !Sub 'aws-mmg-cw-logs-${AWS::Region}'
+          - !Sub 'aws-cw-logs-${AWS::Region}'
           - !Ref 'LambdaS3Bucket'
         S3Key: !Ref 'CFNCustomProviderZipFileName'
-      Handler: aws_mmg_cw_logs.delete_empty_log_streams.handle
+      Handler: aws_cw_logs.delete_empty_log_streams.handle
       Role: !GetAtt LambdaRole.Arn
       Runtime: python3.7
       Timeout: 900
@@ -87,7 +87,7 @@ Resources:
       ScheduleExpression: 'cron(10 * * * ? *)'
       State: ENABLED
       Targets:
-        - Id: aws-mmg-cw-logs-delete-empty-log-streams
+        - Id: aws-cw-logs-delete-empty-log-streams
           Arn: !GetAtt DeleteEmptyLogStreams.Arn
           Input: '{"dry_run": false}'
 
@@ -95,14 +95,14 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Description: set default log retention period to groups without one
-      FunctionName: aws-mmg-cw-set-log-retention-period
+      FunctionName: aws-cw-set-log-retention-period
       Code:
         S3Bucket: !If
           - UsePublicBucket
-          - !Sub 'aws-mmg-cw-logs-${AWS::Region}'
+          - !Sub 'aws-cw-logs-${AWS::Region}'
           - !Ref 'LambdaS3Bucket'
         S3Key: !Ref 'CFNCustomProviderZipFileName'
-      Handler: aws_mmg_cw_logs.set_log_retention.handle
+      Handler: aws_cw_logs.set_log_retention.handle
       Role: !GetAtt LambdaRole.Arn
       Runtime: python3.7
       Timeout: 900
@@ -125,6 +125,6 @@ Resources:
       ScheduleExpression: 'cron(0 * * * ? *)'
       State: ENABLED
       Targets:
-        - Id: aws-mmg-cw-logs-set-log-retention-period
+        - Id: aws-cw-logs-set-log-retention-period
           Arn: !GetAtt SetLogRetentionPeriod.Arn
           Input: '{"dry_run": false}'

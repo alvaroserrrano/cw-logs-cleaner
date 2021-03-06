@@ -1,0 +1,3 @@
+[console_scripts]
+aws-mmg-cw-logs = aws_mmg_cw_logs.__main__:main
+

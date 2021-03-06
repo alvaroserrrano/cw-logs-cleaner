@@ -1,0 +1,1 @@
+aws_mmg_cw_logs
